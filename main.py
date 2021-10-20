@@ -8,6 +8,8 @@ import hashlib
 char1 = ('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z')
 char2 = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z')
 char3 = ('0','1','2','3','4','5','6','7','8','9')
+char4 = ('!', '@', '%', ':', '£', '$', '-', '*', '/', ';', '|', '#')
+current_char = ()
 
 class bruteForce():
     def __init__(self):
@@ -15,14 +17,14 @@ class bruteForce():
 
     def main(self, passw_hash):
         # then call hash function, check if equal
-        for attempt in bruteForce.crack(char1,5): # for each attempt in crack function
+        for attempt in bruteForce.crack(current_char, max_length): # for each attempt in crack function
             if bruteForce.hash(attempt) == passw_hash: # compare hashed value of guess with hash value
                 time_taken = ('{:.2f}s'.format(time.time() - self.time)) # get time taken to complete within 2 decimal places
                 return passw_hash, attempt, time_taken # return hash, plain text password and time taken
         return passw_hash, 'Character set exhausted. Password not found.', ('{:.2f}s'.format(time.time() - self.time)) # if password not found
 
     @staticmethod
-    def crack(charset,maxlength=5):
+    def crack(charset=char1+char3+char4,maxlength=5):
         return (''.join(candidate)
                 # return every possible combination of the character set 'charset', up to length 'maxlength'
                 for candidate in chain.from_iterable(product(charset, repeat=i)
@@ -44,10 +46,13 @@ def get_csv_hashes():
 
 
 
+
 if __name__ == "__main__":
     # parse command line for inputted hashes
-    parser = argparse.ArgumentParser(description='Brute force SHA256 hash')
+    parser = argparse.ArgumentParser(description='Decrypt SHA256 hashes using a brute force attack',)
     parser.add_argument('-c', '--crack', type=str, metavar='', required=False, help='Enter SHA256 Hash(es) to brute force', nargs='*')
+    parser.add_argument('-l', '--max-length', type=int, metavar='', required=False, default=5, help='Enter the maximum length to attempt to crack')
+    parser.add_argument('-s', '--charset', type=list, metavar='', required=False, default=['l','n','s'], help='Use only selected character sets. Usage:Lowercase = l, Uppercase = u, Numbers = n, Special Characters = s. e.g. lnus = full character set')
     args = parser.parse_args()
 
     hashes = []
@@ -64,5 +69,18 @@ if __name__ == "__main__":
             print('Error: no hashes received via command line or csv file')
             exit()
         print('Error: %s. Using only hashes received via command line' % error)
+
+    if args.max_length: # if user inputted a max word length
+        max_length = args.max_length
+
+    if args.charset: # if user inputted specific character set(s) to be used
+        if 'l' in args.charset:
+            current_char += char1 # add lower case charset to current charset
+        if 'u' in args.charset:
+            current_char += char2 # add upper case charset to current charset
+        if 'n' in args.charset:
+            current_char += char3 # add number charset to current charset
+        if 's' in args.charset:
+            current_char += char4 # add special characters charset to current charset
 
     print(bruteForce().main(hashes[0]))
