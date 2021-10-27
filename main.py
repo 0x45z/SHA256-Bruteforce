@@ -25,7 +25,7 @@ class bruteForce():
 
     @staticmethod
     def crack(charset=char1+char3+char4,maxlength=5):
-        return (''.join(candidate)
+        return (''.join(candidate) # (Martijn, 2017)
                 # return every possible combination of the character set 'charset', up to length 'maxlength'
                 for candidate in chain.from_iterable(product(charset, repeat=i)
                 for i in range(1, maxlength + 1)))
